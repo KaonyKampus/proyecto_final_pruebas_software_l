@@ -71,6 +71,9 @@ const PRODUCTOS = [
   },
 ];
 
+
+
+
 const crearCards = () => {
   cajaGaleria = document.getElementById("caja_galeria");
   PRODUCTOS.forEach((producto) => {
@@ -85,9 +88,14 @@ const crearCards = () => {
           <button id="boton_card">Añadir al carrito</button>
         </div>
       `;
+
     cajaGaleria.appendChild(card);
+
   });
 };
+
+
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
