@@ -44,17 +44,11 @@
   text-size-adjust: none;
 }
 
-
-#modal > div {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  max-width: 400px;
-  text-align: center;
-}
-
-.cerrar {
-  float: right;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
+  @keyframes marquee {
+    0%   { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .animate-marquee {
+    display: inline-block;
+    animation: marquee 15s linear infinite;
+  }
