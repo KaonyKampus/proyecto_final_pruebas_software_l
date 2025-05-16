@@ -1,0 +1,262 @@
+// shopping-cart.js
+
+// Estructura del carrito de compras
+document.addEventListener('DOMContentLoaded', function() {
+    // Crear el elemento del carrito y añadirlo al body
+    const cartContainer = document.createElement('div');
+    cartContainer.id = 'shopping-cart';
+    cartContainer.className = 'fixed top-0 right-0 h-screen w-0 bg-gray-800 text-white overflow-hidden transition-all duration-300 z-50 shadow-xl';
+    document.body.appendChild(cartContainer);
+
+    // Contenido del carrito
+    cartContainer.innerHTML = `
+        <div class="flex flex-col h-full">
+            <!-- Cabecera del carrito -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-700">
+                <h2 class="text-xl font-bold">Tu Carrito</h2>
+                <button id="close-cart" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Listado de productos -->
+            <div id="cart-items" class="flex-grow overflow-auto p-4">
+                <!-- Aquí se agregarán dinámicamente los productos -->
+            </div>
+            
+            <!-- Resumen y total -->
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex justify-between mb-2">
+                    <span>Subtotal:</span>
+                    <span id="cart-subtotal">$0.00</span>
+                </div>
+                <div class="flex justify-between mb-4">
+                    <span>Total:</span>
+                    <span id="cart-total" class="font-bold">$0.00</span>
+                </div>
+                <button id="checkout-button" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition">
+                    Finalizar Compra
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Crear botón flotante para abrir el carrito
+    const cartButton = document.createElement('button');
+    cartButton.id = 'cart-button';
+    cartButton.className = 'fixed bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg z-40';
+    cartButton.innerHTML = `
+        <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </div>
+    `;
+    document.body.appendChild(cartButton);
+
+    // Funcionalidad para abrir y cerrar el carrito
+    cartButton.addEventListener('click', function() {
+        cartContainer.style.width = '320px';
+    });
+
+    document.getElementById('close-cart').addEventListener('click', function() {
+        cartContainer.style.width = '0';
+    });
+
+    // Inicializar el array para almacenar productos en el carrito
+    let cartItems = [];
+    
+    // Agregar funcionalidad a los botones "añadir" de las tarjetas de juegos
+    const addButtons = document.querySelectorAll('#card button');
+    addButtons.forEach((button, index) => {
+        button.addEventListener('click', function() {
+            const card = button.closest('#card');
+            const title = card.querySelector('h2').textContent;
+            const img = card.querySelector('img').src;
+            const description = card.querySelector('p').textContent;
+            
+            // Verificar si el producto ya está en el carrito
+            const existingItemIndex = cartItems.findIndex(item => item.title === title);
+            
+            if (existingItemIndex !== -1) {
+                // Incrementar cantidad si ya existe
+                cartItems[existingItemIndex].quantity += 1;
+                updateCartItem(existingItemIndex);
+            } else {
+                // Añadir nuevo producto al carrito
+                const price = Math.floor(Math.random() * 50) + 10; // Precio aleatorio entre 10 y 60
+                const newItem = {
+                    id: Date.now() + index,
+                    title: title,
+                    image: img,
+                    description: description,
+                    price: price,
+                    quantity: 1
+                };
+                cartItems.push(newItem);
+                addItemToCartDOM(newItem);
+            }
+            
+            // Actualizar contador y total
+            updateCartCount();
+            updateCartTotal();
+            
+            // Mostrar notificación
+            showNotification(`${title} añadido al carrito`);
+            
+            // Abrir el carrito automáticamente
+            cartContainer.style.width = '320px';
+        });
+    });
+
+    // Función para agregar un producto al DOM del carrito
+    function addItemToCartDOM(item) {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const itemElement = document.createElement('div');
+        itemElement.className = 'flex border-b border-gray-700 py-2 mb-2';
+        itemElement.dataset.id = item.id;
+        
+        itemElement.innerHTML = `
+            <div class="w-16 h-16 mr-4">
+                <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover rounded">
+            </div>
+            <div class="flex-grow">
+                <h3 class="font-medium">${item.title}</h3>
+                <p class="text-sm text-gray-400">${item.description.substring(0, 30)}${item.description.length > 30 ? '...' : ''}</p>
+                <div class="flex items-center mt-1">
+                    <button class="decrease-quantity text-gray-400 hover:text-white">-</button>
+                    <span class="quantity mx-2">${item.quantity}</span>
+                    <button class="increase-quantity text-gray-400 hover:text-white">+</button>
+                    <span class="ml-auto">$${item.price.toFixed(2)}</span>
+                </div>
+            </div>
+            <button class="remove-item ml-2 text-gray-400 hover:text-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        `;
+        
+        cartItemsContainer.appendChild(itemElement);
+        
+        // Agregar listeners a los botones del producto
+        const decreaseBtn = itemElement.querySelector('.decrease-quantity');
+        const increaseBtn = itemElement.querySelector('.increase-quantity');
+        const removeBtn = itemElement.querySelector('.remove-item');
+        
+        decreaseBtn.addEventListener('click', function() {
+            const index = cartItems.findIndex(cartItem => cartItem.id == item.id);
+            if (cartItems[index].quantity > 1) {
+                cartItems[index].quantity -= 1;
+                updateCartItem(index);
+            } else {
+                removeCartItem(item.id);
+            }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+            const index = cartItems.findIndex(cartItem => cartItem.id == item.id);
+            cartItems[index].quantity += 1;
+            updateCartItem(index);
+        });
+        
+        removeBtn.addEventListener('click', function() {
+            removeCartItem(item.id);
+        });
+    }
+    
+    // Función para actualizar un elemento del carrito
+    function updateCartItem(index) {
+        const item = cartItems[index];
+        const itemElement = document.querySelector(`#cart-items div[data-id="${item.id}"]`);
+        if (itemElement) {
+            itemElement.querySelector('.quantity').textContent = item.quantity;
+        }
+        updateCartCount();
+        updateCartTotal();
+    }
+    
+    // Función para eliminar un elemento del carrito
+    function removeCartItem(itemId) {
+        cartItems = cartItems.filter(item => item.id != itemId);
+        const itemElement = document.querySelector(`#cart-items div[data-id="${itemId}"]`);
+        if (itemElement) {
+            itemElement.remove();
+        }
+        updateCartCount();
+        updateCartTotal();
+    }
+    
+    // Actualizar contador de productos
+    function updateCartCount() {
+        const cartCount = document.getElementById('cart-count');
+        const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+        cartCount.textContent = totalItems;
+    }
+    
+    // Actualizar total del carrito
+    function updateCartTotal() {
+        const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
+        document.getElementById('cart-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('cart-total').textContent = `$${subtotal.toFixed(2)}`;
+    }
+    
+    // Mostrar notificación
+    function showNotification(message) {
+        // Verificar si ya existe una notificación y eliminarla
+        const existingNotification = document.querySelector('.cart-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+        
+        // Crear nueva notificación
+        const notification = document.createElement('div');
+        notification.className = 'cart-notification fixed bottom-20 right-6 bg-green-600 text-white py-2 px-4 rounded shadow-lg z-30 transition-opacity';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        // Ocultar después de 3 segundos
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Finalizar compra
+    document.getElementById('checkout-button').addEventListener('click', function() {
+        if (cartItems.length === 0) {
+            showNotification('Tu carrito está vacío');
+            return;
+        }
+        
+        // Aquí se implementaría la lógica para procesar la compra
+        alert('¡Gracias por tu compra!');
+        
+        // Vaciar carrito
+        cartItems = [];
+        document.getElementById('cart-items').innerHTML = '';
+        updateCartCount();
+        updateCartTotal();
+        showNotification('Compra realizada con éxito');
+        
+        // Cerrar el carrito
+        setTimeout(() => {
+            cartContainer.style.width = '0';
+        }, 1500);
+    });
+});
+
+// Añadir estilos CSS adicionales
+const style = document.createElement('style');
+style.textContent = `
+    .cart-notification {
+        transition: opacity 0.3s ease-in-out;
+    }
+`;
+document.head.appendChild(style);
