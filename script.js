@@ -350,13 +350,29 @@ const crearCards = (productos) => {
         <p class="text-gray-300 text-sm mb-4">${producto.description}</p>
         <p class="text-green-400 font-bold mb-4">$ ${producto.price} COP</p>
 
-        <button class="bg-green-400 hover:bg-green-500 text-black font-semibold py-2 px-4 rounded-lg w-full transition duration-300">
+        <button class="add-to-cart-btn bg-green-400 hover:bg-green-500 text-black font-semibold py-2 px-4 rounded-lg w-full transition duration-300" data-id="${producto.id}">
           Añadir al carrito
         </button>
       </div>
     `;
 
     cajaGaleria.appendChild(card);
+  });
+  
+  // Asignar los event listeners a los botones después de crear las cards
+  document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const productId = parseInt(this.dataset.id);
+      const producto = PRODUCTOS.find(p => p.id === productId);
+      if (producto) {
+        // Si cart.js ya está cargado, llamar directamente a addToCart
+        if (typeof addToCart === 'function') {
+          addToCart(producto);
+        } else {
+          console.error('La función addToCart no está disponible');
+        }
+      }
+    });
   });
 };
 
