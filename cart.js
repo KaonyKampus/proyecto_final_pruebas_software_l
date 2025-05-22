@@ -311,11 +311,12 @@ const showNotification = (message, type = 'info') => {
 // Configurar botones para añadir al carrito desde script.js
 document.addEventListener('DOMContentLoaded', () => {
     initCart();
-    
-    // Configurar los botones de añadir al carrito (los establecerá script.js)
     setTimeout(() => {
         document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+
+            newButton.addEventListener('click', function() {
                 const productId = parseInt(this.dataset.id);
                 const producto = PRODUCTOS.find(p => p.id === productId);
                 if (producto) {

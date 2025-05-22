@@ -350,7 +350,7 @@ const crearCards = (productos) => {
         <p class="text-gray-300 text-sm mb-4">${producto.description}</p>
         <p class="text-green-400 font-bold mb-4">$ ${producto.price} COP</p>
 
-        <button class="add-to-cart-btn bg-green-400 hover:bg-green-500 text-black font-semibold py-2 px-4 rounded-lg w-full transition duration-300" data-id="${producto.id}">
+        <button class="add-to-cart-btn bg-green-400 hover:bg-green-500 text-black font-semibold py-2 px-4 rounded-lg w-full transition duration-300" data-id="${producto.id}" id="anadir">
           Añadir al carrito
         </button>
       </div>
